@@ -1,4 +1,5 @@
 import 'package:api_bloc/api_helper.dart';
+import 'package:api_bloc/app_exceptions.dart';
 import 'package:api_bloc/bloc/quote_event.dart';
 import 'package:api_bloc/bloc/quote_state.dart';
 import 'package:api_bloc/quotes_model.dart';
@@ -15,15 +16,18 @@ class QuoteBloc extends Bloc<QuoteEvent,QuoteState>{
     on<GetQuotesEvent>((event,emit) async{
 
       emit(QuoteLoadingState());
-      var resJson = await apiHelper.getApi(url: Urls.getQuotesUrl);
-
-      
-      if(resJson!=null){
-        var mResData = DataModel.fromJson(resJson);
-        emit(QuoteLoadedState(resData: mResData));
-      }else{
-        emit(QuoteErrorState(errorMsg: "Uhh..No!!, Error Occurred."));
+      try {
+        var resJson = await apiHelper.getApi(url: Urls.getQuotesUrl);
+        if(resJson!=null){
+          var mResData = DataModel.fromJson(resJson);
+          emit(QuoteLoadedState(resData: mResData));
+        }else{
+          emit(QuoteErrorState(errorMsg: "Uhh..No!!, Error Occurred."));
+        }
+      }catch (e){
+        emit(QuoteErrorState(errorMsg: (e as AppExceptions).toErrorMsg()));
       }
+     
 
     });
 
